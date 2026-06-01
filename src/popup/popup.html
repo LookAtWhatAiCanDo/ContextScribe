@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContextScribe</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(22, 28, 45, 0.6);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-color: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary-color: #3b82f6;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      width: 320px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 600;
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .info-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .quick-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--text-muted);
+    }
+
+    .status-dot.active {
+      background-color: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    button:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: var(--primary-color);
+    }
+
+    .footer-note {
+      font-size: 11px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ContextScribe</h1>
+    <span id="ai-badge" class="badge">Offline</span>
+  </header>
+
+  <main class="info-list">
+    <div class="info-item">
+      <span class="info-label">Active Recipe</span>
+      <span id="active-recipe" class="info-value">AI Coding Agent Brief</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Active Lens</span>
+      <span id="active-lens" class="info-value">Developer Focus</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Destination Adapter</span>
+      <span id="active-adapter" class="info-value">ChatGPT</span>
+    </div>
+  </main>
+
+  <div class="quick-status">
+    <div id="status-indicator" class="status-dot"></div>
+    <span id="status-text">Deterministic Mode (No AI)</span>
+  </div>
+
+  <button id="btn-options">Configure Settings</button>
+
+  <div class="footer-note">Right-click any page node to capture context</div>
+
+  <script src="popup.ts" type="module"></script>
+</body>
+</html>

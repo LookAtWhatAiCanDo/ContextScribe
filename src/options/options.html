@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContextScribe Settings</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(22, 28, 45, 0.6);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-color: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent-color: #10b981;
+      --error-color: #ef4444;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      line-height: 1.5;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .version {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      border-left: 3px solid var(--primary-color);
+      padding-left: 10px;
+      margin-bottom: 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-color);
+    }
+
+    .description {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      accent-color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      opacity: 0;
+      background: rgba(16, 185, 129, 0.9);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .conditional-section {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      background: rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 2px solid var(--primary-color);
+    }
+
+    .conditional-section.visible {
+      display: flex;
+    }
+
+    .alert {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      color: #f59e0b;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>ContextScribe Settings</h1>
+      <span class="version">v0.1.0</span>
+    </header>
+
+    <main class="card">
+      <h2>AI Inference Configuration</h2>
+
+      <div class="form-group">
+        <label for="provider-select">Inference Provider</label>
+        <span class="description">Select the backend model service context summaries</span>
+        <select id="provider-select">
+          <option value="none">Deterministic (No AI - Local Copy Only)</option>
+          <option value="ollama">Local Ollama</option>
+          <option value="lm-studio">LM Studio (Local OpenAI API)</option>
+          <option value="chrome-ai">Chrome Built-in AI (LanguageModel API)</option>
+        </select>
+      </div>
+
+      <!-- Conditional Sections -->
+      <div id="section-ollama" class="conditional-section">
+        <div class="form-group">
+          <label for="ollama-url">Ollama Server Endpoint</label>
+          <input type="text" id="ollama-url" value="http://localhost:11434/api/chat">
+        </div>
+        <div class="form-group">
+          <label for="ollama-model">Model Name</label>
+          <input type="text" id="ollama-model" value="llama3">
+        </div>
+      </div>
+
+      <div id="section-lmstudio" class="conditional-section">
+        <div class="form-group">
+          <label for="lmstudio-url">LM Studio Server Endpoint</label>
+          <input type="text" id="lmstudio-url" value="http://localhost:1234/v1/chat/completions">
+        </div>
+        <div class="form-group">
+          <label for="lmstudio-model">Model Name (optional)</label>
+          <input type="text" id="lmstudio-model" placeholder="meta-llama-3-8b-instruct">
+        </div>
+      </div>
+
+      <div id="section-chrome-ai" class="conditional-section">
+        <div class="alert">
+          <strong>Chrome Built-in AI Requirements:</strong>
+          <span>This provider requires Google Chrome 138+ or Dev/Canary versions with the Prompt API enabled in chrome://flags. Make sure Gemini Nano is downloaded.</span>
+        </div>
+      </div>
+
+      <h2>General Settings</h2>
+
+      <div class="form-group">
+        <label for="recipe-select">Default Context Recipe</label>
+        <select id="recipe-select">
+          <option value="recipe_ai_brief">AI Coding Agent Brief</option>
+          <option value="recipe_bug_report">Jira Bug Report</option>
+          <option value="recipe_exec_summary">Executive Summary</option>
+          <option value="recipe_research_notes">Research Notes</option>
+          <option value="recipe_support_ticket">Support Ticket Summary</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="lens-select">Default Lens Focus</label>
+        <select id="lens-select">
+          <option value="lens_dev">Developer (Technical details, code)</option>
+          <option value="lens_security">Security Engineer (Risks, CORS, tokens)</option>
+          <option value="lens_legal">Legal (Licenses, terms, liability)</option>
+          <option value="lens_product">Product Manager (UI flows, user goals)</option>
+          <option value="lens_support">Customer Support (Frustrations, timelines)</option>
+          <option value="lens_exec">Executive (Timeline, costs, takeaways)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="adapter-select">Default Destination Adapter</label>
+        <select id="adapter-select">
+          <option value="adapter_chatgpt">ChatGPT</option>
+          <option value="adapter_claude">Claude</option>
+          <option value="adapter_claude_code">Claude Code CLI</option>
+          <option value="adapter_cursor">Cursor AI Editor</option>
+          <option value="adapter_jira">Jira</option>
+          <option value="adapter_slack">Slack</option>
+          <option value="adapter_obsidian">Obsidian</option>
+          <option value="adapter_notion">Notion</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-group">
+          <input type="checkbox" id="form-protection" checked>
+          <span>Exclude password fields and sensitive form inputs from captures</span>
+        </label>
+      </div>
+
+      <div class="button-group">
+        <button id="btn-save" class="btn-primary">Save Settings</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-el" class="toast">Settings Saved Successfully!</div>
+
+  <script src="options.ts" type="module"></script>
+</body>
+</html>
