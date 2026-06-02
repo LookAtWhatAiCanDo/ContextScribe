@@ -1,6 +1,6 @@
 {
   "name": "context-scribe",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Structure-aware context capture browser extension",
   "main": "index.js",
   "type": "module",
