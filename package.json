@@ -1,17 +1,17 @@
 {
   "name": "context-scribe",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Structure-aware context capture browser extension",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && node build.js",
     "preview": "vite preview"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "jsdom": "^28.1.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.11"
   }

@@ -158,7 +158,7 @@ The extension uses minimum-privilege permissions:
 {
   "manifest_version": 3,
   "name": "ContextScribe",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "permissions": [
     "contextMenus",
     "storage",
@@ -166,7 +166,7 @@ The extension uses minimum-privilege permissions:
     "tabs"
   ],
   "host_permissions": [
-    "https://github.com/*"
+    "<all_urls>"
   ]
 }
 ```

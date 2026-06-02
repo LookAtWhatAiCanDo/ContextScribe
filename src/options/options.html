@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ContextScribe Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-color: #0b0f19;
@@ -15,7 +18,7 @@
       --primary-hover: #2563eb;
       --accent-color: #10b981;
       --error-color: #ef4444;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
 
     * {
@@ -231,7 +234,7 @@
   <div class="container">
     <header>
       <h1>ContextScribe Settings</h1>
-      <span class="version">v0.1.0</span>
+      <span class="version">v0.0.1</span>
     </header>
 
     <main class="card">
@@ -321,6 +324,13 @@
         <label class="checkbox-group">
           <input type="checkbox" id="form-protection" checked>
           <span>Exclude password fields and sensitive form inputs from captures</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-group">
+          <input type="checkbox" id="log-full-prompts">
+          <span>Log full AI prompts inside the Service Worker console (instead of first/last 100 characters)</span>
         </label>
       </div>
 
