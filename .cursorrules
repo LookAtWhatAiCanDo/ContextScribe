@@ -1,0 +1,32 @@
+# ContextScribe Cursor Instructions
+
+## Core Tech Stack Rules
+1. **TypeScript Only**: Use strict TypeScript types. Avoid `any` where possible.
+2. **Vanilla CSS**: Write modular vanilla CSS in options or popup pages. Do not introduce CSS-in-JS libraries or Tailwind CSS unless explicitly requested.
+3. **Vanilla DOM Processing**: Utilize the custom Intermediate Representation (IR) mapping defined in `./src/shared/types.ts` and `./src/shared/ir.ts`. Avoid heavy scraping libraries (e.g. `turndown` or `markdown-it`). Use `./src/shared/serializer.ts` for CommonMark rendering.
+
+## Chrome Extension (Manifest V3) Constraints
+1. **Clipboard Writing Location**:
+   - **Mandatory**: Never write to the clipboard in background service workers (`./src/background/`). The background script must send a `WRITE_CLIPBOARD` runtime message to the active tab's content script to handle it.
+2. **Cross-Origin Network Requests**:
+   - **Mandatory**: Never execute API or HTTP requests (e.g. Ollama, LM Studio) inside content scripts (`./src/content/`). They will be blocked by page CORS rules. Proxy all queries through the service worker (`./src/background/inference/`).
+3. **Element Capturing Logic**:
+   - Element targets are tracked in `./src/content/tracker.ts` during right-clicks. Reference the tracked node using `getLastClickedElement()`.
+
+## DOM Parser & Selector Guidelines
+1. **Stability**: Website structures change frequently. Use attribute-based, semantic selectors where possible instead of deep CSS chains.
+2. **GitHub Specific Parsing**:
+   - For Pull Request comments and diff hunks, target semantic elements:
+     - Authors: `[data-hovercard-type="user"]` or `a.author`
+     - Files: `div.file-header` or elements with `data-path` attributes
+     - Resolved checkmarks or outlines: `details.discussion-details`
+3. **Form Protection**:
+   - Proactively skip inputs of `type="password"`, `type="hidden"`, or matching credential keywords to prevent leakage.
+
+## Code Quality & Dev Flow
+1. **Readable Bundling**:
+   - Under `vite.config.ts`, `minify: false` is configured to facilitate testing and review. Do not change this unless requested.
+2. **Do Not Commit/Stage**:
+   - Do not execute `git add` or `git commit` commands automatically.
+3. **Documentation Updates**:
+   - When modifying configuration recipes, lenses, adapters, or system pipelines, synchronize `./AGENTS.md` and `./README.md` immediately.
