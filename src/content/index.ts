@@ -91,7 +91,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         const target = getLastClickedElement();
         
         // Auto-expand resolved threads and load hidden conversations before extraction on GitHub PR pages
-        if (window.location.hostname.includes("github.com") && window.location.pathname.includes("/pull/")) {
+        if ((window.location.hostname === "github.com" || window.location.hostname.endsWith(".github.com")) && window.location.pathname.includes("/pull/")) {
           console.log("[ContextScribe] GitHub PR page detected. Auto-expanding resolved threads before extraction...");
           try {
             await toggleGitHubResolvedThreads("expand", target);
