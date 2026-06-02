@@ -1,27 +1,67 @@
 import { DocumentIR, IRBlock, CaptureMetadata } from "../../shared/types";
+import { highlightElement } from "./highlight";
 
 /**
- * Checks if a DOM element is visible to the user.
+ * Folds sequential newlines, carriage returns, tabs, and spaces into a single space.
  */
-function isElementVisible(el: HTMLElement): boolean {
+function foldWhitespace(text: string): string {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+
+/**
+ * Checks if a DOM element is visible to the user and not a protected input field.
+ */
+export function isElementVisible(el: HTMLElement, formProtection = true, allowCollapsed = false): boolean {
   if (!el) return false;
   
-  // Guard against hidden inputs, password fields
-  if (el.tagName === "INPUT") {
+  // Guard against inputs, password fields and sensitive credential selectors
+  const tagName = el.tagName;
+  if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") {
     const input = el as HTMLInputElement;
     if (input.type === "password" || input.type === "hidden") {
       return false;
+    }
+
+    if (formProtection) {
+      const name = (input.name || "").toLowerCase();
+      const id = (input.id || "").toLowerCase();
+      const className = (input.className || "").toLowerCase();
+      const placeholder = (input.placeholder || "").toLowerCase();
+      const type = (input.type || "").toLowerCase();
+
+      const sensitiveKeywords = [
+        "key", "token", "secret", "password", "credential", 
+        "auth", "api", "pwd", "card", "cvv", "security", "pass"
+      ];
+      
+      const isSensitive = sensitiveKeywords.some(keyword => 
+        name.includes(keyword) || 
+        id.includes(keyword) || 
+        className.includes(keyword) || 
+        placeholder.includes(keyword) ||
+        type.includes(keyword)
+      );
+
+      if (isSensitive) {
+        return false;
+      }
     }
   }
 
   // Basic styling visibility checks
   const style = window.getComputedStyle(el);
-  if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") {
+  if (style.visibility === "hidden" || style.opacity === "0") {
     return false;
   }
 
+  if (!allowCollapsed) {
+    if (style.display === "none") {
+      return false;
+    }
+  }
+
   // Ignore structural elements that are usually invisible noise
-  const tagName = el.tagName;
   if (tagName === "SCRIPT" || tagName === "STYLE" || tagName === "NOSCRIPT" || tagName === "IFRAME") {
     return false;
   }
@@ -90,9 +130,16 @@ function parseTable(tableEl: HTMLTableElement): IRBlock {
 /**
  * Recursively parses a DOM subtree into IR blocks.
  */
-function parseElement(node: Node): IRBlock | null {
+export function parseElement(
+  node: Node,
+  formProtection = true,
+  customParser?: (node: Node, formProtection: boolean) => IRBlock | null,
+  allowCollapsed = false
+): IRBlock | null {
+  const parse = (n: Node) => customParser ? customParser(n, formProtection) : parseElement(n, formProtection, undefined, allowCollapsed);
+
   if (node.nodeType === Node.TEXT_NODE) {
-    const content = (node.textContent || "").trim();
+    const content = foldWhitespace(node.textContent || "");
     if (!content) return null;
     return {
       type: "paragraph",
@@ -105,7 +152,7 @@ function parseElement(node: Node): IRBlock | null {
   }
 
   const el = node as HTMLElement;
-  if (!isElementVisible(el)) return null;
+  if (!isElementVisible(el, formProtection, allowCollapsed)) return null;
 
   const tag = el.tagName.toUpperCase();
 
@@ -115,13 +162,13 @@ function parseElement(node: Node): IRBlock | null {
     return {
       type: "heading",
       level,
-      text: (el.textContent || "").trim()
+      text: foldWhitespace(el.textContent || "")
     };
   }
 
   // 2. Blockquotes
   if (tag === "BLOCKQUOTE" || tag === "Q") {
-    const blockQuoteText = (el.textContent || "").trim();
+    const blockQuoteText = foldWhitespace(el.textContent || "");
     return {
       type: "blockquote",
       text: blockQuoteText
@@ -150,7 +197,7 @@ function parseElement(node: Node): IRBlock | null {
     const items: IRBlock[] = [];
     const lis = Array.from(el.children).filter(child => child.tagName === "LI");
     lis.forEach(li => {
-      const parsedLi = parseElement(li);
+      const parsedLi = parse(li);
       if (parsedLi) items.push(parsedLi);
     });
 
@@ -169,14 +216,14 @@ function parseElement(node: Node): IRBlock | null {
       if (child.nodeType === Node.TEXT_NODE) {
         directText.push(child.textContent || "");
       } else {
-        const block = parseElement(child);
+        const block = parse(child);
         if (block) childBlocks.push(block);
       }
     });
 
     return {
       type: "list-item",
-      text: directText.join("").trim(),
+      text: foldWhitespace(directText.join("")),
       children: childBlocks
     };
   }
@@ -185,14 +232,14 @@ function parseElement(node: Node): IRBlock | null {
   if (tag === "P") {
     return {
       type: "paragraph",
-      text: (el.textContent || "").trim()
+      text: foldWhitespace(el.textContent || "")
     };
   }
 
   // 7. General Div/Section/Containers: traverse down
   const childrenBlocks: IRBlock[] = [];
   Array.from(el.childNodes).forEach(child => {
-    const block = parseElement(child);
+    const block = parse(child);
     if (block) {
       // Inline children consolidation
       if (block.type === "paragraph" && block.text === "") return;
@@ -219,11 +266,20 @@ function parseElement(node: Node): IRBlock | null {
   };
 }
 
+
 /**
  * Extracts element tree to Document IR format from target node.
  */
-export function extractGenericDOM(target: HTMLElement): DocumentIR {
-  const parsed = parseElement(target);
+export function extractGenericDOM(
+  target: HTMLElement, 
+  shouldHighlight = true, 
+  formProtection = true,
+  allowCollapsed = false
+): DocumentIR {
+  if (shouldHighlight) {
+    highlightElement(target);
+  }
+  const parsed = parseElement(target, formProtection, undefined, allowCollapsed);
   const rootBlock = parsed || { type: "root", children: [] };
 
   const metadata: CaptureMetadata = {

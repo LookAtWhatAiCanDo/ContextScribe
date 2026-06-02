@@ -98,10 +98,18 @@ export function serializeToMarkdown(block: IRBlock, depth: number = 0): string {
       const botLabel = block.metadata?.isAiGenerated ? " (AI)" : "";
       const unresolvedLabel = block.metadata?.isUnresolved ? " (Unresolved)" : "";
       const timestamp = block.metadata?.timestamp ? ` _(${block.metadata.timestamp})_` : "";
+      const severityLabel = block.metadata?.severity ? ` [${block.metadata.severity}]` : "";
 
-      const headerLine = `${author}${botLabel}${unresolvedLabel}${timestamp}:\n`;
-      const bodyLines = block.text
-        ? block.text.split("\n").map(l => `> ${l}`).join("\n")
+      const headerLine = `${author}${botLabel}${unresolvedLabel}${timestamp}${severityLabel}:\n`;
+      let commentContent = "";
+      if (block.children && block.children.length > 0) {
+        commentContent = block.children.map(child => serializeToMarkdown(child, depth)).join("\n\n");
+      } else if (block.text) {
+        commentContent = block.text;
+      }
+
+      const bodyLines = commentContent
+        ? commentContent.split("\n").map(l => `> ${l}`).join("\n")
         : "";
       result += `${headerLine}${bodyLines}`;
       break;

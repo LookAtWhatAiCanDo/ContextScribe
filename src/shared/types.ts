@@ -104,6 +104,13 @@ export type ExtensionMessage =
   | {
       action: "TOGGLE_RESOLVED_THREADS";
       operation: "expand" | "collapse" | "toggle";
+    }
+  | {
+      action: "UPDATE_STREAM";
+      text: string;
+    }
+  | {
+      action: "ABORT_TASK";
     };
 
 export interface ProviderResponse {
@@ -118,6 +125,19 @@ export interface InferenceProvider {
   id: string;
   name: string;
   isAvailable: () => Promise<boolean>;
-  generate: (systemPrompt: string, userPrompt: string) => Promise<ProviderResponse>;
+  generate: (
+    systemPrompt: string,
+    userPrompt: string,
+    onLog?: (msg: string) => void,
+    onStream?: (text: string) => void,
+    signal?: AbortSignal
+  ) => Promise<ProviderResponse>;
 }
+
+export interface BackgroundTaskState {
+  running: boolean;
+  statusText?: string;
+  startedAt?: number;
+}
+
 

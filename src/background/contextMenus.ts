@@ -2,9 +2,10 @@ import { BUILTIN_RECIPES } from "../shared/config/recipes";
 import { BUILTIN_LENSES } from "../shared/config/lenses";
 import { BUILTIN_ADAPTERS } from "../shared/config/adapters";
 
-export function setupContextMenus(): void {
-  // Clear any existing menus first to avoid duplicate ID errors
-  chrome.contextMenus.removeAll(() => {
+export function setupContextMenus(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    // Clear any existing menus first to avoid duplicate ID errors
+    chrome.contextMenus.removeAll(() => {
     // Root Menu
     chrome.contextMenus.create({
       id: "parent_scribe",
@@ -172,6 +173,8 @@ export function setupContextMenus(): void {
       parentId: "sub_github",
       title: "Toggle Resolved Comments",
       contexts: ["all"]
+    });
+    resolve();
     });
   });
 }
