@@ -1,0 +1,276 @@
+/* Import Inter Google Font directly within stylesheet */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.contextscribe-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+.contextscribe-toast-success {
+  background: rgba(16, 185, 129, 0.85); /* Vibrant green glass */
+}
+
+.contextscribe-toast-error {
+  background: rgba(239, 68, 68, 0.85); /* Vibrant red glass */
+}
+
+.contextscribe-toast-info {
+  background: rgba(59, 130, 246, 0.85); /* Vibrant blue glass */
+}
+
+.contextscribe-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#contextscribe-progress-badge {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 2147483647;
+  width: 380px;
+  max-width: 90vw;
+  box-sizing: border-box;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.85); /* Premium dark slate glass */
+  transform: translateY(100px);
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  overflow: hidden; /* Clips the progress bar bottom rounded corners */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+
+#contextscribe-progress-badge.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#contextscribe-badge-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  user-select: none;
+}
+
+#contextscribe-progress-text {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+#contextscribe-badge-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#contextscribe-progress-stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ef4444; /* Vibrant coral/red for stop */
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  pointer-events: auto;
+}
+
+#contextscribe-progress-stop:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  transform: scale(1.08);
+}
+
+#contextscribe-progress-stop:active {
+  transform: scale(0.92);
+}
+
+#contextscribe-badge-expand-btn,
+#contextscribe-badge-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  line-height: 1;
+}
+
+#contextscribe-badge-expand-btn:hover,
+#contextscribe-badge-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+#contextscribe-badge-content {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease;
+}
+
+#contextscribe-progress-badge.expanded #contextscribe-badge-content {
+  max-height: 250px;
+  opacity: 1;
+  margin-top: 12px;
+}
+
+#contextscribe-badge-textarea {
+  width: 100%;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px;
+  resize: none;
+  overflow-y: auto;
+  outline: none;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+#contextscribe-badge-textarea::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#contextscribe-badge-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#contextscribe-badge-textarea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+#contextscribe-badge-textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#contextscribe-badge-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+#contextscribe-badge-copy-btn {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+#contextscribe-badge-copy-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+#contextscribe-badge-char-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#contextscribe-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981, #60a5fa, #3b82f6);
+  background-size: 200% 100%;
+  animation: contextscribe-progress-shimmer 2s infinite linear;
+  pointer-events: none;
+}
+
+#contextscribe-progress-badge.completed #contextscribe-progress-bar {
+  display: none;
+}
+
+@keyframes contextscribe-progress-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.contextscribe-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  box-shadow: 0 0 8px #3b82f6;
+  animation: contextscribe-pulse 1.5s infinite ease-in-out;
+}
+
+.contextscribe-progress-dot.success {
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: none;
+}
+
+.contextscribe-progress-dot.error {
+  background-color: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+  animation: none;
+}
+
+@keyframes contextscribe-pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px #10b981; background-color: #10b981; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}

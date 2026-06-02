@@ -29,6 +29,11 @@ declare global {
 export class ChromeAIProvider implements InferenceProvider {
   id = "chrome-ai";
   name = "Chrome Built-in AI";
+  private logFullPrompts = false;
+
+  constructor(logFullPrompts = false) {
+    this.logFullPrompts = logFullPrompts;
+  }
 
   async isAvailable(): Promise<boolean> {
     try {

@@ -84,6 +84,7 @@ export interface Settings {
   selectedAdapter: string;
   exclusions: string[]; // Domain list
   formProtection: boolean; // Protect inputs/password fields
+  logFullPrompts: boolean; // Log full prompts instead of first/last 100 characters
 }
 
 // Message Protocols
