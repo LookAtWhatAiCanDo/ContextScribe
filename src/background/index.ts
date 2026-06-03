@@ -389,8 +389,9 @@ async function executeExtraction(
     await sendClipboardWrite(tabId, finalOutput, true, warningMessage);
   } catch (error: any) {
     if (error.name === "AbortError" || error.message?.includes("aborted")) {
-      console.log("[ContextScribe SW] Extraction flow aborted by user.");
+      console.log("[ContextScribe SW] Extraction flow aborted.");
       await logToTab(tabId, "Task cancelled.", "warn");
+      await sendClipboardWrite(tabId, "", false, "Task cancelled.");
     } else {
       await logToTab(tabId, `Error executing extraction flow: ${error.message || error}`, "error");
       await focusTab(tabId);

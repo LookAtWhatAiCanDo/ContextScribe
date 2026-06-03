@@ -50,7 +50,7 @@ ContextScribe/
 ## 📦 Installation & Setup
 
 ### Prerequisites
-* [Node.js](https://nodejs.org/) (v18 or higher recommended)
+* [Node.js](https://nodejs.org/) (v20.19.0 or higher recommended)
 * [Google Chrome](https://www.google.com/chrome/) (Chrome 138+ required if testing the Chrome Built-in AI feature)
 
 ### 1. Build the Extension

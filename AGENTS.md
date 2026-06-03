@@ -59,6 +59,11 @@ To ensure the project context remains accurate:
     - `recipes.ts`: Defined capture recipes (e.g. AI Coding Agent Brief, Jira bug format, raw structure summaries).
     - `lenses.ts`: Defined perspective focus lenses (e.g. Developer, Security, Legal focus).
     - `adapters.ts`: Target platform serializers (e.g. Slack syntax rules, Jira markup, Cursor, Notion).
+- **[fixtures/](./fixtures)**: Saved HTML input fixtures and expected markdown/JSON output snapshots.
+  - `inputs/`: Target webpage static HTML dumps.
+  - `outputs/`: Verified markdown or JSON output snapshots.
+- **[tests/](./tests)**: Core testing environment.
+  - `exploratory/`: Sandbox, ad-hoc, and research verification scripts designed to run against saved fixtures.
 
 ---
 
@@ -110,6 +115,25 @@ When modifying the Options or Popup pages, or the Content Script Toasts, follow 
 10. **Collapsible details block parsing and expansion**:
     - **Constraint**: Sections like "Show a summary per file" on GitHub PRs are collapsible details blocks and must be expanded to ensure DOM visibility before extraction.
     - **Rule**: `src/content/dom/githubExpander.ts` queries and expands these summary details automatically. The generic parser maps HTML `<details>` and `<summary>` tags to the custom `"details"` IR block type, which is serialized to standard GFM collapsible elements.
+
+---
+
+## 🧪 Testing & Exploratory Verification Guidelines
+
+The codebase maintains an active library of exploratory test scripts and fixtures to verify DOM parser behaviors without browser overhead.
+
+- **Directory Locations**:
+  - `./fixtures/inputs/`: Saved HTML dumps of real-world target pages.
+  - `./fixtures/outputs/`: Verified markdown or JSON output snapshots.
+  - `./tests/exploratory/`: Node.js verification scripts designed to run against target fixtures.
+
+- **AI Execution Rules**:
+  1. **Before Modifying Extractor Logic**: If you are editing parser rules (such as `./src/content/extractor/github.ts`), search `./tests/exploratory/` for relevant scripts (e.g., `test_parser.js`, `check_forms.cjs`). Run these scripts locally to verify current behavior.
+  2. **Verify Against Regressions**: After editing code, run the appropriate exploratory scripts to ensure you haven't broken existing parsing rules.
+  3. **Writing New Exploratory Tests**: When adding support for a new webpage structure (e.g., Jira, Slack, Gitlab):
+     - Dump a static HTML sample to `./fixtures/inputs/`.
+     - Write a simple, documented exploratory script in `./tests/exploratory/` to parse the fixture and display the Intermediate Representation (IR).
+     - Commit the script so future developers and agents can reuse it.
 
 ---
 

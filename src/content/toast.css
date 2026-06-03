@@ -1,5 +1,4 @@
-/* Import Inter Google Font directly within stylesheet */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Use system font stack; avoid remote @import which can be blocked by page/extension CSP */
 
 .contextscribe-toast {
   position: fixed;

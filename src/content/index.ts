@@ -140,7 +140,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message.success || !message.text) {
       console.error("[ContextScribe] Extraction failed or returned empty content:", message.message);
       showProgressError(message.message || "Failed to parse context.");
-      showToast(message.message || "Failed to parse context.", "error");
+      if (message.message !== "Task cancelled.") {
+        showToast(message.message || "Failed to parse context.", "error");
+      }
       startRemoveHighlightTimer(); // Start 5s fade-out timer on failure
       sendResponse({ success: false });
       return;
