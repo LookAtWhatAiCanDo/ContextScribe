@@ -105,7 +105,12 @@ async function run() {
             }))
             .filter(link => {
               // Ignore empty/placeholder links or reaction buttons
-              if (!link.href || link.href.startsWith('javascript:')) return false;
+              if (
+                !link.href ||
+                link.href.startsWith('javascript:') ||
+                link.href.startsWith('data:') ||
+                link.href.startsWith('vbscript:')
+              ) return false;
               if (link.href.includes('/reactions') || link.text === '') return false;
               return true;
             });
