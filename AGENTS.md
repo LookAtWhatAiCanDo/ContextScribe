@@ -104,6 +104,12 @@ When modifying the Options or Popup pages, or the Content Script Toasts, follow 
 8. **Target-Based Recursive PR Extraction**:
    - **Constraint**: Under GitHub PR pages, simply querying comment thread elements would discard non-comment children inside the highlighted green border element (e.g. file lists, headers).
    - **Rule**: All extraction actions must operate recursively on the selected element including all of its child elements. The PR extractor (`src/content/extractor/github.ts`) utilizes a custom-parser callback to recursively traverse the DOM subtree of the selected element, resolving comments to specialized structures and other elements to generic structures.
+9. **DOM-to-Markdown Inline Parsing Support**:
+   - **Constraint**: Standard `.textContent` queries strip out all inline styling (links, bold, italic, inline code, and line breaks) inside paragraphs, list items, and headings.
+   - **Rule**: `src/content/extractor/generic.ts` implements a recursive `serializeInline` helper. All text-containing elements and blocks parse using this helper to cleanly map inline tags to their markdown equivalents (`[text](href)`, `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, and `\n`).
+10. **Collapsible details block parsing and expansion**:
+    - **Constraint**: Sections like "Show a summary per file" on GitHub PRs are collapsible details blocks and must be expanded to ensure DOM visibility before extraction.
+    - **Rule**: `src/content/dom/githubExpander.ts` queries and expands these summary details automatically. The generic parser maps HTML `<details>` and `<summary>` tags to the custom `"details"` IR block type, which is serialized to standard GFM collapsible elements.
 
 ---
 

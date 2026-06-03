@@ -12,7 +12,8 @@ export type IRBlockType =
   | "table-header-cell"
   | "table-cell"
   | "comment-thread"
-  | "comment";
+  | "comment"
+  | "details";
 
 export interface IRBlock {
   type: IRBlockType;

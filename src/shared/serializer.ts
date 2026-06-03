@@ -114,6 +114,15 @@ export function serializeToMarkdown(block: IRBlock, depth: number = 0): string {
       result += `${headerLine}${bodyLines}`;
       break;
 
+    case "details":
+      const summaryText = block.text ? `<summary>${block.text}</summary>\n` : "";
+      let detailsContent = "";
+      if (block.children && block.children.length > 0) {
+        detailsContent = block.children.map(child => serializeToMarkdown(child, depth)).join("\n\n");
+      }
+      result += `<details>\n${summaryText}${detailsContent}\n</details>`;
+      break;
+
     default:
       if (block.text) {
         result += block.text;

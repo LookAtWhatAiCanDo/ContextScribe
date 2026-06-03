@@ -77,6 +77,21 @@ export async function toggleGitHubResolvedThreads(
     }
   }
 
+  // 0. Target and expand "Show a summary per file" details blocks
+  if (action === "expand" || action === "toggle") {
+    const summaries = scope.querySelectorAll<HTMLElement>("summary");
+    summaries.forEach((summary) => {
+      const text = summary.textContent ? summary.textContent.trim().replace(/\s+/g, ' ') : "";
+      if (text.toLowerCase().includes("show a summary per file")) {
+        const details = summary.closest<HTMLDetailsElement>("details");
+        if (details && !details.hasAttribute("open")) {
+          details.setAttribute("open", "");
+          count++;
+        }
+      }
+    });
+  }
+
   // 1. Target AJAX forms loading hidden conversations (e.g. "6 hidden conversations" or "Load more…")
   // We run this first so they are fully loaded into the DOM before we process comments.
   if (action === "expand" || action === "toggle") {

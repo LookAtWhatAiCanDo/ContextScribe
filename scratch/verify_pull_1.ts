@@ -19,13 +19,19 @@ async function run() {
   // Set up globals needed by the content script
   global.window = dom.window as any;
   global.document = dom.window.document as any;
-  global.navigator = dom.window.navigator as any;
+  Object.defineProperty(global, 'navigator', { value: dom.window.navigator, configurable: true, writable: true });
   global.HTMLElement = dom.window.HTMLElement as any;
   global.Node = dom.window.Node as any;
+  
+  // Mock requestAnimationFrame
+  global.requestAnimationFrame = (callback: any) => setTimeout(callback, 0);
+  global.cancelAnimationFrame = (id: any) => clearTimeout(id);
+  dom.window.requestAnimationFrame = global.requestAnimationFrame;
+  dom.window.cancelAnimationFrame = global.cancelAnimationFrame;
 
-  // Mock chrome APIs
+  // Mock chrome APIs on JSDOM window and global
   let messageListener: any = null;
-  global.chrome = {
+  const chromeMock = {
     runtime: {
       onMessage: {
         addListener: (fn: any) => {
@@ -33,11 +39,15 @@ async function run() {
         }
       }
     }
-  } as any;
+  };
+  (dom.window as any).chrome = chromeMock as any;
+  global.chrome = chromeMock as any;
 
-  // Import the content script to register the onMessage listener
-  console.log('[Test] Importing content script...');
-  await import('../src/content/index');
+  // Load and evaluate the compiled content script bundle
+  console.log('[Test] Evaluating content script bundle...');
+  const bundlePath = path.join(__dirname, '../dist/content.js');
+  const bundleContent = fs.readFileSync(bundlePath, 'utf8');
+  dom.window.eval(bundleContent);
 
   // Find the target timeline item review container
   const target = dom.window.document.querySelector('.js-timeline-item');

@@ -1,4 +1,4 @@
-**[Copilot](/apps/copilot-pull-request-reviewer)AI** reviewed  [Jun 2, 2026](#pullrequestreview-4407922544)
+**[Copilot](/apps/copilot-pull-request-reviewer) AI** reviewed  [Jun 2, 2026](#pullrequestreview-4407922544)
 
 [View reviewed changes](/LookAtWhatAiCanDo/ContextScribe/pull/1/files/86e6074ab54104603850c5df40f5513adec7ccca)
 
@@ -64,9 +64,9 @@
 > Comment on lines +52 to +54
 > 
 > ```
-> +              ### Prerequisites
-> +              * [Node.js](https://nodejs.org/) (v18 or higher recommended)
-> +              * [Google Chrome](https://www.google.com/chrome/) (Chrome 138+ required if testing the Chrome Built-in AI feature)
+> +                            ### Prerequisites
+> +                            * [Node.js](https://nodejs.org/)                              (v18 or higher recommended)
+> +                            * [Google                              Chrome](https://www.google.com/chrome/) (Chrome 138+ required if testing the Chrome                              Built-in AI feature)
 > ```
 > 
 > `jsdom@28.1.0` requires Node.js `^20.19.0 || ^22.12.0 || >=24.0.0` (per package-lock), so the prerequisites here claiming Node 18+ will lead to install/runtime failures for contributors on Node 18. Update the documented Node requirement (or downgrade jsdom to a Node 18-compatible version).
@@ -89,9 +89,9 @@
 > Comment on lines +7 to +9
 > 
 > ```
-> +                <link rel="preconnect" href="https://fonts.googleapis.com">
-> +                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-> +                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+> +                             <link rel="preconnect"                              href="https://fonts.googleapis.com">
+> +                             <link rel="preconnect"                              href="https://fonts.gstatic.com" crossorigin>
+> +                             <link                              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"                              rel="stylesheet">
 > ```
 > 
 > Chrome extension pages are blocked by a restrictive default CSP, so linking to Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`) will typically be refused and can generate console errors. Prefer bundling fonts locally or rely on the existing system-font fallbacks.
@@ -115,9 +115,9 @@
 > Comment on lines +7 to +9
 > 
 > ```
-> +                <link rel="preconnect" href="https://fonts.googleapis.com">
-> +                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-> +                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+> +                             <link rel="preconnect"                              href="https://fonts.googleapis.com">
+> +                             <link rel="preconnect"                              href="https://fonts.gstatic.com" crossorigin>
+> +                             <link                              href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"                              rel="stylesheet">
 > ```
 > 
 > Chrome extension pages are blocked by a restrictive default CSP, so linking to Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com`) will typically be refused and can generate console errors. Prefer bundling fonts locally or rely on the existing system-font fallbacks.
@@ -141,8 +141,8 @@
 > Comment on lines +1 to +2
 > 
 > ```
-> +              /* Import Inter Google Font directly within stylesheet */
-> +              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+> +                            /* Import Inter Google Font directly                              within stylesheet */
+> +                            @import                              url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 > ```
 > 
 > Loading Google Fonts via `@import` from a content-script stylesheet triggers an external request on every page and is frequently blocked by site CSP, which can cause noisy console errors and undermines the extension's “privacy-first” positioning. Prefer bundling the font locally or rely on the existing system fallback stack.
@@ -163,13 +163,13 @@
 > Comment on lines 390 to +394
 > 
 > ```
->                  } catch (error: any) {
-> -                  console.error("Error executing extraction flow:", error);
-> -                  await sendClipboardWrite(tabId, "", false, error.message || "An unexpected error occurred during extraction.");
-> +                  if (error.name === "AbortError" || error.message?.includes("aborted")) {
-> +                    console.log("[ContextScribe SW] Extraction flow aborted by user.");
-> +                    await logToTab(tabId, "Task cancelled.", "warn");
-> +                  } else {
+>                               } catch (error: any) {
+> -                             console.error("Error executing                              extraction flow:", error);
+> -                             await sendClipboardWrite(tabId, "",                              false, error.message || "An unexpected error occurred during extraction.");
+> +                             if (error.name === "AbortError" ||                              error.message?.includes("aborted")) {
+> +                             console.log("[ContextScribe SW]                              Extraction flow aborted by user.");
+> +                             await logToTab(tabId, "Task                              cancelled.", "warn");
+> +                             } else {
 > ```
 > 
 > When an extraction is aborted (`AbortError`), the service worker logs and clears `backgroundTask`, but it doesn't notify the content script to transition the progress badge out of the “running” state. This can leave the in-page progress UI stuck (especially for non-user aborts like provider timeouts). Consider sending an explicit completion/cancellation message to the tab so the content script can call `showProgressError(...)` / `stopProgress()` and clear UI state.
@@ -179,13 +179,13 @@
 > Comment on lines +161 to 167
 > 
 > ```
-> +                "version": "0.0.1",
->                  "permissions": [
->                    "contextMenus",
->                    "storage",
->                    "scripting",
->                    "tabs"
->                  ],
+> +                             "version": "0.0.1",
+>                               "permissions": [
+>                               "contextMenus",
+>                               "storage",
+>                               "scripting",
+>                               "tabs"
+>                               ],
 > ```
 > 
 > The manifest example in this plan is out of sync with the repo: the extension is version 0.0.2 and now requests `clipboardWrite`, but this snippet still shows 0.0.1 and omits `clipboardWrite`. Also, the justification section below still references `host_permissions: ["https://github.com/*"]` even though the manifest is now `<all_urls>`.
@@ -195,10 +195,10 @@
 > Comment on lines 3 to 5
 > 
 > ```
->                  "name": "ContextScribe",
-> -                "version": "0.1.0",
-> +                "version": "0.0.2",
->                  "description": "Structure-aware context capture and clean Markdown conversion",
+>                               "name": "ContextScribe",
+> -                             "version": "0.1.0",
+> +                             "version": "0.0.2",
+>                               "description": "Structure-aware                              context capture and clean Markdown conversion",
 > ```
 > 
 > PR description mentions aligning versions to `0.0.1`, but the manifest/package/options UI in this PR are set to `0.0.2` (and the implementation plan snippet was updated to `0.0.1`). Please reconcile which version is intended and update the PR description/docs or the version fields accordingly to avoid confusion.

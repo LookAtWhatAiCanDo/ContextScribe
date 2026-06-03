@@ -62,11 +62,78 @@ export function isElementVisible(el: HTMLElement, formProtection = true, allowCo
   }
 
   // Ignore structural elements that are usually invisible noise
-  if (tagName === "SCRIPT" || tagName === "STYLE" || tagName === "NOSCRIPT" || tagName === "IFRAME") {
+  if (
+    tagName === "SCRIPT" ||
+    tagName === "STYLE" ||
+    tagName === "NOSCRIPT" ||
+    tagName === "IFRAME" ||
+    tagName === "TEMPLATE" ||
+    tagName === "REACT-PARTIAL"
+  ) {
     return false;
   }
 
   return true;
+}
+
+/**
+ * Helper to recursively serialize inline elements to GFM markdown text.
+ */
+function serializeInline(node: Node): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const text = node.textContent || "";
+    const hasLeadingSpace = /^\s/.test(text);
+    const hasTrailingSpace = /\s$/.test(text);
+    const folded = text.replace(/\s+/g, " ").trim();
+    if (!folded) {
+      return text.includes(" ") ? " " : "";
+    }
+    return (hasLeadingSpace ? " " : "") + folded + (hasTrailingSpace ? " " : "");
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return "";
+  }
+  const el = node as HTMLElement;
+  if (!isElementVisible(el, true, true)) {
+    return "";
+  }
+  const tag = el.tagName.toUpperCase();
+
+  if (tag === "A") {
+    const href = el.getAttribute("href") || "";
+    const content = Array.from(el.childNodes).map(serializeInline).join("");
+    if (href) {
+      return `[${content.trim()}](${href})`;
+    }
+    return content;
+  }
+  if (tag === "STRONG" || tag === "B") {
+    const content = Array.from(el.childNodes).map(serializeInline).join("");
+    return content.trim() ? `**${content.trim()}**` : "";
+  }
+  if (tag === "EM" || tag === "I") {
+    const content = Array.from(el.childNodes).map(serializeInline).join("");
+    return content.trim() ? `*${content.trim()}*` : "";
+  }
+  if (tag === "CODE") {
+    const content = el.textContent || "";
+    return content ? `\`${content}\`` : "";
+  }
+  if (tag === "DEL" || tag === "S" || tag === "STRIKE") {
+    const content = Array.from(el.childNodes).map(serializeInline).join("");
+    return content.trim() ? `~~${content.trim()}~~` : "";
+  }
+  if (tag === "BR") {
+    return "\n";
+  }
+  if (tag === "IMG") {
+    const alt = el.getAttribute("alt") || "";
+    const src = el.getAttribute("src") || "";
+    return src ? `![${alt}](${src})` : "";
+  }
+
+  // Fallback: recursively serialize child nodes
+  return Array.from(el.childNodes).map(serializeInline).join("");
 }
 
 /**
@@ -107,9 +174,10 @@ function parseTable(tableEl: HTMLTableElement): IRBlock {
     const tdThs = Array.from(tr.querySelectorAll("th, td"));
     
     tdThs.forEach(cell => {
+      const cellText = Array.from(cell.childNodes).map(serializeInline).join("").trim();
       cells.push({
         type: cell.tagName === "TH" ? "table-header-cell" : "table-cell",
-        text: (cell.textContent || "").trim()
+        text: cellText
       });
     });
     
@@ -156,28 +224,60 @@ export function parseElement(
 
   const tag = el.tagName.toUpperCase();
 
+  // 0. Check if this container contains ONLY inline child elements.
+  // If so, we can parse it as a single paragraph block using serializeInline
+  // to avoid splitting inline text/metadata across multiple lines.
+  const hasBlockChildren = Array.from(el.children).some(child => 
+    !["A", "STRONG", "B", "EM", "I", "CODE", "SPAN", "DEL", "S", "STRIKE", "BR", "IMG"].includes(child.tagName.toUpperCase())
+  );
+
+  const isStructuralTag = ["TABLE", "UL", "OL", "DETAILS", "PRE"].includes(tag);
+
+  if (!hasBlockChildren && !isStructuralTag) {
+    const inlineText = Array.from(el.childNodes).map(serializeInline).join("").trim();
+    if (inlineText) {
+      return {
+        type: "paragraph",
+        text: inlineText
+      };
+    }
+    return null;
+  }
+
   // 1. Headings
   if (/^H[1-6]$/.test(tag)) {
     const level = parseInt(tag.charAt(1), 10);
+    const inlineText = Array.from(el.childNodes).map(serializeInline).join("").trim();
     return {
       type: "heading",
       level,
-      text: foldWhitespace(el.textContent || "")
+      text: inlineText
     };
   }
 
   // 2. Blockquotes
   if (tag === "BLOCKQUOTE" || tag === "Q") {
-    const blockQuoteText = foldWhitespace(el.textContent || "");
-    return {
-      type: "blockquote",
-      text: blockQuoteText
-    };
+    if (hasBlockChildren) {
+      const childrenBlocks: IRBlock[] = [];
+      Array.from(el.childNodes).forEach(child => {
+        const block = parse(child);
+        if (block) childrenBlocks.push(block);
+      });
+      return {
+        type: "blockquote",
+        children: childrenBlocks
+      };
+    } else {
+      const inlineText = Array.from(el.childNodes).map(serializeInline).join("").trim();
+      return {
+        type: "blockquote",
+        text: inlineText
+      };
+    }
   }
 
   // 3. Pre/Code blocks
-  if (tag === "PRE" || tag === "CODE") {
-    // If it's a code block inside pre, parse nested
+  if (tag === "PRE" || (tag === "CODE" && el.closest("pre"))) {
     const codeTag = el.querySelector("code");
     const targetEl = codeTag || el;
     return {
@@ -186,13 +286,39 @@ export function parseElement(
       text: targetEl.textContent || ""
     };
   }
+  
+  if (tag === "CODE") {
+    return {
+      type: "paragraph",
+      text: `\`${el.textContent || ""}\``
+    };
+  }
 
   // 4. Tables
   if (tag === "TABLE") {
     return parseTable(el as HTMLTableElement);
   }
 
-  // 5. Lists & Items
+  // 5. Details/Collapsible
+  if (tag === "DETAILS") {
+    const summaryEl = el.querySelector("summary");
+    const summaryText = summaryEl ? Array.from(summaryEl.childNodes).map(serializeInline).join("").trim() : "Details";
+    
+    const childrenBlocks: IRBlock[] = [];
+    Array.from(el.childNodes).forEach(child => {
+      if (child === summaryEl) return;
+      const block = parse(child);
+      if (block) childrenBlocks.push(block);
+    });
+    
+    return {
+      type: "details",
+      text: summaryText,
+      children: childrenBlocks
+    };
+  }
+
+  // 6. Lists & Items
   if (tag === "UL" || tag === "OL") {
     const items: IRBlock[] = [];
     const lis = Array.from(el.children).filter(child => child.tagName === "LI");
@@ -208,40 +334,51 @@ export function parseElement(
   }
 
   if (tag === "LI") {
-    // Collect direct text and child nodes
-    const directText: string[] = [];
-    const childBlocks: IRBlock[] = [];
+    if (hasBlockChildren) {
+      const inlineParts: string[] = [];
+      const childBlocks: IRBlock[] = [];
 
-    Array.from(el.childNodes).forEach(child => {
-      if (child.nodeType === Node.TEXT_NODE) {
-        directText.push(child.textContent || "");
-      } else {
-        const block = parse(child);
-        if (block) childBlocks.push(block);
-      }
-    });
+      Array.from(el.childNodes).forEach(child => {
+        const isInline = child.nodeType === Node.TEXT_NODE || 
+          (child.nodeType === Node.ELEMENT_NODE && 
+           ["A", "STRONG", "B", "EM", "I", "CODE", "SPAN", "DEL", "S", "STRIKE", "BR", "IMG"].includes((child as HTMLElement).tagName.toUpperCase()));
+        
+        if (isInline) {
+          inlineParts.push(serializeInline(child));
+        } else {
+          const block = parse(child);
+          if (block) childBlocks.push(block);
+        }
+      });
 
-    return {
-      type: "list-item",
-      text: foldWhitespace(directText.join("")),
-      children: childBlocks
-    };
+      return {
+        type: "list-item",
+        text: inlineParts.join("").trim(),
+        children: childBlocks
+      };
+    } else {
+      const inlineText = Array.from(el.childNodes).map(serializeInline).join("").trim();
+      return {
+        type: "list-item",
+        text: inlineText
+      };
+    }
   }
 
-  // 6. Generic Paragraph/Containers
+  // 7. Generic Paragraph/Containers
   if (tag === "P") {
+    const inlineText = Array.from(el.childNodes).map(serializeInline).join("").trim();
     return {
       type: "paragraph",
-      text: foldWhitespace(el.textContent || "")
+      text: inlineText
     };
   }
 
-  // 7. General Div/Section/Containers: traverse down
+  // 8. General Div/Section/Containers: traverse down
   const childrenBlocks: IRBlock[] = [];
   Array.from(el.childNodes).forEach(child => {
     const block = parse(child);
     if (block) {
-      // Inline children consolidation
       if (block.type === "paragraph" && block.text === "") return;
       childrenBlocks.push(block);
     }
@@ -251,9 +388,8 @@ export function parseElement(
     return null;
   }
 
-  // If container only contains inline paragraph text blocks, merge them
   const allParagraphs = childrenBlocks.every(c => c.type === "paragraph");
-  if (allParagraphs && tag !== "DIV" && tag !== "SECTION" && tag !== "ARTICLE") {
+  if (allParagraphs && tag !== "DIV" && tag !== "SECTION" && tag !== "ARTICLE" && tag !== "MAIN" && tag !== "ASIDE") {
     return {
       type: "paragraph",
       text: childrenBlocks.map(c => c.text).join(" ").trim()

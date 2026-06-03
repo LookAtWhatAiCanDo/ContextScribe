@@ -369,9 +369,18 @@ function parseDiscussionThread(
         const overviewBodyEl = threadContainer.querySelector<HTMLElement>(".comment-body.js-comment-body");
         if (overviewBodyEl) {
           const overviewBodyDoc = extractGenericDOM(overviewBodyEl, false, formProtection, allowCollapsed);
-          // Filter to only heading/paragraph blocks to avoid including react-partial noise
+          // Filter to only valid content blocks to avoid including react-partial noise
           const overviewChildren: IRBlock[] = (overviewBodyDoc.root.children || []).filter(
-            (c: IRBlock) => c.type === "heading" || c.type === "paragraph"
+            (c: IRBlock) => [
+              "heading",
+              "paragraph",
+              "list",
+              "list-item",
+              "code-block",
+              "blockquote",
+              "table",
+              "details"
+            ].includes(c.type)
           );
           const overviewText = overviewChildren.map(c => c.text || "").filter(Boolean).join("\n");
           if (overviewChildren.length > 0 || overviewText) {
