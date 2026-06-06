@@ -119,6 +119,15 @@ Identify Customer Name, Issue Classification, Severity, and Action Items.`,
   }
 ];
 
+export const DUMMY_RECIPE: Recipe = {
+  id: "none",
+  name: "No Recipe",
+  description: "Bypasses all transformations and keeps the raw extracted structure.",
+  transform: (doc: DocumentIR) => doc
+};
+
 export function getRecipe(id: string): Recipe {
+  if (!id || id === "none") return DUMMY_RECIPE;
   return BUILTIN_RECIPES.find(r => r.id === id) || BUILTIN_RECIPES[0];
 }
+

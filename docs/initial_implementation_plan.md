@@ -158,15 +158,16 @@ The extension uses minimum-privilege permissions:
 {
   "manifest_version": 3,
   "name": "ContextScribe",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "permissions": [
     "contextMenus",
     "storage",
     "scripting",
-    "tabs"
+    "tabs",
+    "clipboardWrite"
   ],
   "host_permissions": [
-    "https://github.com/*"
+    "<all_urls>"
   ]
 }
 ```
@@ -176,7 +177,8 @@ The extension uses minimum-privilege permissions:
 - `storage`: Required to save settings, chosen provider configurations, API keys, and selected recipes/lenses.
 - `scripting`: Required to inject and execute extraction scripts on active tabs dynamically when context menus are clicked.
 - `tabs`: Required to read tab details (URL, title) to construct Markdown metadata and to determine if a specialized parser should be loaded.
-- `host_permissions: ["https://github.com/*"]`: Specifically required to programmatically manipulate the DOM of GitHub PR pages (e.g. click thread expand/collapse toggles, execute detailed selector queries across nested frames) even when direct activeTab gestures are inactive.
+- `clipboardWrite`: Required to write the formatted Markdown content back to the user's clipboard upon successful processing.
+- `host_permissions: ["<all_urls>"]`: Specifically required to programmatically manipulate the DOM of matched page environments (e.g., auto-expanding GitHub PR threads, executing detailed selector queries, injecting styling) when a capture context action is triggered.
 
 ---
 

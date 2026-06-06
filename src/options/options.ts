@@ -1,11 +1,18 @@
 import { Settings } from "../shared/types";
 import { getSettings, saveSettings } from "../background/settings";
+import { 
+  OLLAMA_DEFAULT_URL, 
+  OLLAMA_DEFAULT_MODEL, 
+  LMSTUDIO_DEFAULT_URL, 
+  LMSTUDIO_DEFAULT_MODEL 
+} from "../shared/constants";
 
 const providerSelect = document.getElementById("provider-select") as HTMLSelectElement;
 const recipeSelect = document.getElementById("recipe-select") as HTMLSelectElement;
 const lensSelect = document.getElementById("lens-select") as HTMLSelectElement;
 const adapterSelect = document.getElementById("adapter-select") as HTMLSelectElement;
 const formProtection = document.getElementById("form-protection") as HTMLInputElement;
+const logFullPrompts = document.getElementById("log-full-prompts") as HTMLInputElement;
 
 // Section wrappers
 const sectionOllama = document.getElementById("section-ollama") as HTMLDivElement;
@@ -53,13 +60,14 @@ async function load(): Promise<void> {
   lensSelect.value = settings.selectedLens;
   adapterSelect.value = settings.selectedAdapter;
   formProtection.checked = settings.formProtection;
+  logFullPrompts.checked = settings.logFullPrompts;
 
   if (settings.inference.provider === "ollama") {
-    ollamaUrl.value = settings.inference.endpointUrl || "http://localhost:11434/api/chat";
-    ollamaModel.value = settings.inference.modelName || "llama3";
+    ollamaUrl.value = settings.inference.endpointUrl || OLLAMA_DEFAULT_URL;
+    ollamaModel.value = settings.inference.modelName || OLLAMA_DEFAULT_MODEL;
   } else if (settings.inference.provider === "lm-studio") {
-    lmstudioUrl.value = settings.inference.endpointUrl || "http://localhost:1234/v1/chat/completions";
-    lmstudioModel.value = settings.inference.modelName || "meta-llama-3-8b-instruct";
+    lmstudioUrl.value = settings.inference.endpointUrl || LMSTUDIO_DEFAULT_URL;
+    lmstudioModel.value = settings.inference.modelName || LMSTUDIO_DEFAULT_MODEL;
   }
 
   updateConditionalVisibility();
@@ -90,7 +98,8 @@ async function save(): Promise<void> {
     selectedRecipe: recipeSelect.value,
     selectedLens: lensSelect.value,
     selectedAdapter: adapterSelect.value,
-    formProtection: formProtection.checked
+    formProtection: formProtection.checked,
+    logFullPrompts: logFullPrompts.checked
   });
 
   showToast();

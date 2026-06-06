@@ -15,7 +15,7 @@ When generating code suggestions, refactorings, or explanations, follow these co
 - **No Background DOM Access**: Service workers have no `window` or `document`. Never import or run DOM-interacting code inside `src/background/`.
 - **Clipboard Isolation**: Background scripts cannot execute clipboard operations. All writes must be handled in the content script under `src/content/` by sending it a `WRITE_CLIPBOARD` message.
 - **API Network Requests**: Content scripts cannot directly contact external model servers (like Ollama or LM Studio) due to CORS. Background scripts must receive details and proxy the request.
-- **Manifest Permissions**: Do not add unnecessary permissions to `public/manifest.json`. Only request minimum required permissions (`contextMenus`, `storage`, `scripting`, `tabs`, `<all_urls>`).
+- **Manifest Permissions**: Do not add unnecessary permissions to `public/manifest.json`. Only request minimum required permissions (`contextMenus`, `storage`, `tabs`, `<all_urls>`).
 
 ## Coding Conventions
 - **TypeScript**: Always provide typed definitions. Ensure types resolve correctly via `./src/shared/types.ts`.

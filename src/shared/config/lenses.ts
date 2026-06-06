@@ -60,6 +60,15 @@ export const BUILTIN_LENSES: Lens[] = [
   }
 ];
 
+export const DUMMY_LENS: Lens = {
+  id: "none",
+  name: "No Lens",
+  focusArea: "Bypasses all filters and retains the original extracted content structure.",
+  filter: (_block: IRBlock) => true
+};
+
 export function getLens(id: string): Lens {
+  if (!id || id === "none") return DUMMY_LENS;
   return BUILTIN_LENSES.find(l => l.id === id) || BUILTIN_LENSES[0];
 }
+

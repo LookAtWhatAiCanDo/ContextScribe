@@ -14,7 +14,7 @@ export function resolveProvider(settings: Settings): InferenceProvider {
         cfg.modelName || "llama3"
       );
     case "chrome-ai":
-      return new ChromeAIProvider();
+      return new ChromeAIProvider(settings.logFullPrompts);
     case "lm-studio":
       return new LMStudioProvider(
         cfg.endpointUrl || "http://localhost:1234/v1/chat/completions",

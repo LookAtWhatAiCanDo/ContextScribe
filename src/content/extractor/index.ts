@@ -7,15 +7,15 @@ import { extractGitHubPR } from "./github";
  */
 export function extractContent(
   target: HTMLElement,
-  options: { githubAction?: string } = {}
+  options: { githubAction?: string; formProtection?: boolean } = {}
 ): DocumentIR {
   const url = window.location.href;
 
   // Detect GitHub PR Pages
   if (url.includes("github.com") && url.includes("/pull/")) {
-    return extractGitHubPR(target, options.githubAction);
+    return extractGitHubPR(target, options.githubAction, options.formProtection);
   }
 
   // Fallback to generic webpage element extraction
-  return extractGenericDOM(target);
+  return extractGenericDOM(target, true, options.formProtection);
 }

@@ -76,6 +76,15 @@ tags: [contextscribe, capture]
   }
 ];
 
+export const DUMMY_ADAPTER: DestinationAdapter = {
+  id: "none",
+  name: "Raw Markdown",
+  flavor: "commonmark",
+  format: (markdown: string, _meta: CaptureMetadata) => markdown
+};
+
 export function getAdapter(id: string): DestinationAdapter {
+  if (!id || id === "none" || id === "raw") return DUMMY_ADAPTER;
   return BUILTIN_ADAPTERS.find(a => a.id === id) || BUILTIN_ADAPTERS[0];
 }
+

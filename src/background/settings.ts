@@ -1,17 +1,19 @@
 import { Settings } from "../shared/types";
+import { OLLAMA_DEFAULT_URL, OLLAMA_DEFAULT_MODEL } from "../shared/constants";
 
 export const DEFAULT_SETTINGS: Settings = {
   inference: {
     provider: "none",
-    endpointUrl: "http://localhost:11434/api/chat",
-    modelName: "llama3",
+    endpointUrl: OLLAMA_DEFAULT_URL,
+    modelName: OLLAMA_DEFAULT_MODEL,
     apiKey: ""
   },
   selectedRecipe: "recipe_ai_brief",
   selectedLens: "lens_dev",
   selectedAdapter: "adapter_chatgpt",
   exclusions: [],
-  formProtection: true
+  formProtection: true,
+  logFullPrompts: false
 };
 
 export async function getSettings(): Promise<Settings> {

@@ -59,6 +59,11 @@ To ensure the project context remains accurate:
     - `recipes.ts`: Defined capture recipes (e.g. AI Coding Agent Brief, Jira bug format, raw structure summaries).
     - `lenses.ts`: Defined perspective focus lenses (e.g. Developer, Security, Legal focus).
     - `adapters.ts`: Target platform serializers (e.g. Slack syntax rules, Jira markup, Cursor, Notion).
+- **[fixtures/](./fixtures)**: Saved HTML input fixtures and expected markdown/JSON output snapshots.
+  - `inputs/`: Target webpage static HTML dumps.
+  - `outputs/`: Verified markdown or JSON output snapshots.
+- **[tests/](./tests)**: Core testing environment.
+  - `exploratory/`: Sandbox, ad-hoc, and research verification scripts designed to run against saved fixtures.
 
 ---
 
@@ -104,6 +109,34 @@ When modifying the Options or Popup pages, or the Content Script Toasts, follow 
 8. **Target-Based Recursive PR Extraction**:
    - **Constraint**: Under GitHub PR pages, simply querying comment thread elements would discard non-comment children inside the highlighted green border element (e.g. file lists, headers).
    - **Rule**: All extraction actions must operate recursively on the selected element including all of its child elements. The PR extractor (`src/content/extractor/github.ts`) utilizes a custom-parser callback to recursively traverse the DOM subtree of the selected element, resolving comments to specialized structures and other elements to generic structures.
+9. **DOM-to-Markdown Inline Parsing Support**:
+   - **Constraint**: Standard `.textContent` queries strip out all inline styling (links, bold, italic, inline code, and line breaks) inside paragraphs, list items, and headings.
+   - **Rule**: `src/content/extractor/generic.ts` implements a recursive `serializeInline` helper. All text-containing elements and blocks parse using this helper to cleanly map inline tags to their markdown equivalents (`[text](href)`, `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, and `\n`). To ensure that the Markdown is fully self-sufficient on another machine, all inline links (`<a>` tags) and images (`<img>` tags) have their relative paths fully qualified/resolved to absolute URLs relative to the page's current location (`window.location.href`). Local repo file paths (which are parsed as text, not links) remain as simple relative paths.
+10. **Collapsible details block parsing and expansion**:
+    - **Constraint**: Sections like "Show a summary per file" on GitHub PRs are collapsible details blocks and must be expanded to ensure DOM visibility before extraction.
+    - **Rule**: `src/content/dom/githubExpander.ts` queries and expands these summary details automatically. The generic parser maps HTML `<details>` and `<summary>` tags to the custom `"details"` IR block type, which is serialized to standard GFM collapsible elements.
+11. **Clickable File URIs & Code Dedenting**:
+    - **Constraint**: Plain relative repo paths and deeply nested indentation offsets (e.g., 18 spaces) inside captured code blocks/diffs are difficult for downstream AI coding agents to immediately resolve or perform direct drop-in replacements.
+    - **Rule**: The serializer resolves relative repository paths to standard relative Markdown links (e.g., `[file.ts](./file.ts)`). In addition, standard code blocks and diff blocks are processed via a dedenting utility to strip off common leading whitespace while preserving the diff prefixes (`+`, `-`, or ` `) and metadata headers.
+
+---
+
+## 🧪 Testing & Exploratory Verification Guidelines
+
+The codebase maintains an active library of exploratory test scripts and fixtures to verify DOM parser behaviors without browser overhead.
+
+- **Directory Locations**:
+  - `./fixtures/inputs/`: Saved HTML dumps of real-world target pages.
+  - `./fixtures/outputs/`: Verified markdown or JSON output snapshots.
+  - `./tests/exploratory/`: Node.js verification scripts designed to run against target fixtures.
+
+- **AI Execution Rules**:
+  1. **Before Modifying Extractor Logic**: If you are editing parser rules (such as `./src/content/extractor/github.ts`), search `./tests/exploratory/` for relevant scripts (e.g., `test_parser.js`, `check_forms.cjs`). Run these scripts locally to verify current behavior.
+  2. **Verify Against Regressions**: After editing code, run the appropriate exploratory scripts to ensure you haven't broken existing parsing rules.
+  3. **Writing New Exploratory Tests**: When adding support for a new webpage structure (e.g., Jira, Slack, Gitlab):
+     - Dump a static HTML sample to `./fixtures/inputs/`.
+     - Write a simple, documented exploratory script in `./tests/exploratory/` to parse the fixture and display the Intermediate Representation (IR).
+     - Commit the script so future developers and agents can reuse it.
 
 ---
 

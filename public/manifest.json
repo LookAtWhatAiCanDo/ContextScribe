@@ -1,16 +1,16 @@
 {
   "manifest_version": 3,
   "name": "ContextScribe",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "description": "Structure-aware context capture and clean Markdown conversion",
   "permissions": [
     "contextMenus",
     "storage",
-    "scripting",
-    "tabs"
+    "tabs",
+    "clipboardWrite"
   ],
   "host_permissions": [
-    "https://github.com/*"
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "src/popup/popup.html"
@@ -24,6 +24,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
+      "css": ["assets/content.css"],
       "run_at": "document_start"
     }
   ]

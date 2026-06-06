@@ -14,6 +14,11 @@ const btnOptions = document.getElementById("btn-options") as HTMLButtonElement;
 async function loadStatus(): Promise<void> {
   const settings = await getSettings();
 
+  // Fetch background task state
+  const data = await chrome.storage.local.get("backgroundTask");
+  const task = data.backgroundTask;
+  const isRunning = task && task.running === true;
+
   // Load readable text
   const recipe = getRecipe(settings.selectedRecipe);
   const lens = getLens(settings.selectedLens);
@@ -25,24 +30,38 @@ async function loadStatus(): Promise<void> {
 
   const provider = settings.inference.provider;
 
-  if (provider === "none") {
-    aiBadge.textContent = "Offline";
-    aiBadge.style.color = "#9ca3af";
-    aiBadge.style.background = "rgba(156, 163, 175, 0.1)";
-    aiBadge.style.borderColor = "rgba(156, 163, 175, 0.2)";
-    
-    statusIndicator.className = "status-dot";
-    statusText.textContent = "Deterministic Mode (No AI)";
-  } else {
-    aiBadge.textContent = "AI Active";
-    aiBadge.style.color = "#10b981";
-    aiBadge.style.background = "rgba(16, 185, 129, 0.1)";
-    aiBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
+  if (isRunning) {
+    btnOptions.disabled = true;
 
-    statusIndicator.className = "status-dot active";
-    
-    const provName = provider === "ollama" ? "Ollama" : provider === "lm-studio" ? "LM Studio" : "Chrome AI";
-    statusText.textContent = `Connected to ${provName}`;
+    aiBadge.textContent = "Running";
+    aiBadge.style.color = "#3b82f6";
+    aiBadge.style.background = "rgba(59, 130, 246, 0.1)";
+    aiBadge.style.borderColor = "rgba(59, 130, 246, 0.2)";
+
+    statusIndicator.className = "status-dot running";
+    statusText.textContent = task.statusText || "Processing context...";
+  } else {
+    btnOptions.disabled = false;
+
+    if (provider === "none") {
+      aiBadge.textContent = "Offline";
+      aiBadge.style.color = "#9ca3af";
+      aiBadge.style.background = "rgba(156, 163, 175, 0.1)";
+      aiBadge.style.borderColor = "rgba(156, 163, 175, 0.2)";
+      
+      statusIndicator.className = "status-dot";
+      statusText.textContent = "Deterministic Mode (No AI)";
+    } else {
+      aiBadge.textContent = "AI Active";
+      aiBadge.style.color = "#10b981";
+      aiBadge.style.background = "rgba(16, 185, 129, 0.1)";
+      aiBadge.style.borderColor = "rgba(16, 185, 129, 0.2)";
+
+      statusIndicator.className = "status-dot active";
+      
+      const provName = provider === "ollama" ? "Ollama" : provider === "lm-studio" ? "LM Studio" : "Chrome AI";
+      statusText.textContent = `Connected to ${provName}`;
+    }
   }
 }
 
@@ -51,3 +70,9 @@ btnOptions.addEventListener("click", () => {
 });
 
 document.addEventListener("DOMContentLoaded", loadStatus);
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName === "local" && (changes.settings || changes.backgroundTask)) {
+    loadStatus();
+  }
+});
