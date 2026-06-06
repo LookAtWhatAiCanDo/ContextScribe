@@ -2,7 +2,7 @@
   "meta": {
     "title": "feat: implement multi-device sync, browser auth handshake, and parser… by paulpv · Pull Request #1 · LookAtWhatAiCanDo/Codeoba",
     "url": "https://github.com/LookAtWhatAiCanDo/Codeoba/pull/1",
-    "timestamp": "2026-06-02T02:33:56.622Z"
+    "timestamp": "2026-06-06T14:28:18.169Z"
   },
   "root": {
     "type": "root",
@@ -20,30 +20,12 @@
                     "type": "root",
                     "children": [
                       {
-                        "type": "root",
-                        "children": [
-                          {
-                            "type": "paragraph",
-                            "text": "Copilot AI"
-                          },
-                          {
-                            "type": "paragraph",
-                            "text": "reviewed"
-                          },
-                          {
-                            "type": "paragraph",
-                            "text": "May 29, 2026"
-                          }
-                        ]
+                        "type": "paragraph",
+                        "text": "**[Copilot](https://github.com/apps/copilot-pull-request-reviewer) AI** reviewed  [May 29, 2026](https://github.com/LookAtWhatAiCanDo/Codeoba/pull/1#pullrequestreview-4394328318)"
                       },
                       {
-                        "type": "root",
-                        "children": [
-                          {
-                            "type": "paragraph",
-                            "text": "View reviewed changes"
-                          }
-                        ]
+                        "type": "paragraph",
+                        "text": "[View reviewed changes](https://github.com/LookAtWhatAiCanDo/Codeoba/pull/1/changes)"
                       }
                     ]
                   }
@@ -64,271 +46,20 @@
                         "children": [
                           {
                             "type": "comment",
-                            "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins.",
+                            "text": "Pull request overview\nCopilot reviewed 45 out of 46 changed files in this pull request and generated 16 comments.",
                             "metadata": {
                               "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:43-07:00",
+                              "timestamp": "",
                               "isAiGenerated": true
                             },
                             "children": [
                               {
                                 "type": "paragraph",
-                                "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins."
+                                "text": "Pull request overview"
                               },
                               {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/auth/LocalAuthServer.kt\n@@ -21,9 +21,21 @@\n \n         activeServer.createContext(\"/callback\") { exchange ->\n             try {\n-                // Set CORS headers\n-                val origin = exchange.requestHeaders.getFirst(\"Origin\") ?: \"*\"\n-                exchange.responseHeaders.set(\"Access-Control-Allow-Origin\", origin)\n+                // Set CORS headers (restrict to trusted origins)\n+                val origin = exchange.requestHeaders.getFirst(\"Origin\")\n+                val allowedOrigins = setOf(\n+                    \"https://codeoba.firebaseapp.com\",\n+                    \"http://localhost:5000\"\n+                )\n+                val allowedOrigin = origin?.takeIf { it in allowedOrigins }\n+                if (exchange.requestMethod.equals(\"POST\", ignoreCase = true) && allowedOrigin == null) {\n+                    exchange.sendResponseHeaders(403, -1)\n+                    exchange.close()\n+                    return@createContext\n+                }\n+                if (allowedOrigin != null) {\n+                    exchange.responseHeaders.set(\"Access-Control-Allow-Origin\", allowedOrigin)\n+                }\n                 exchange.responseHeaders.set(\"Access-Control-Allow-Methods\", \"POST, GET, OPTIONS\")\n                 exchange.responseHeaders.set(\"Access-Control-Allow-Headers\", \"Content-Type, Authorization\")"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:43-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
                                 "type": "paragraph",
-                                "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs."
-                              },
-                              {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/auth/LocalAuthServer.kt\n@@ -153,7 +153,7 @@\n                         Thread.sleep(1000)\n                         stop()\n                     } catch (_: Exception) {}\n-                }.start()\n+                }.apply { isDaemon = true }.start()\n             }\n         }"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:44-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped."
-                              },
-                              {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: core/src/commonMain/kotlin/llc/lookatwhataicando/codeoba/core/domain/parser/LogParser.kt\n@@ -119,20 +119,15 @@\n         val semanticSpeed = (100.0 + (turnCount * 5.2)).coerceAtMost(250.0)\n         val watcherLatency = (10.0 + (turnCount * 0.8)).coerceAtMost(50.0)\n \n-        return \"\"\"\n-        {\n-          \"keyActions\": [\n-            ${actions.joinToString(\",\") { \"\\\"$it\\\"\" }}\n-          ],\n-          \"errors\": [\n-            ${errors.joinToString(\",\") { \"\\\"$it\\\"\" }}\n-          ],\n-          \"performanceCharts\": [\n-            {\"label\": \"Lexical Search Speed\", \"value\": $lexicalSpeed},\n-            {\"label\": \"Semantic Search Speed\", \"value\": $semanticSpeed},\n-            {\"label\": \"Directory Watcher Latency\", \"value\": $watcherLatency}\n-          ]\n-        }\n-        \"\"\".trimIndent()\n+        val summary = SessionSummary(\n+            keyActions = actions,\n+            errors = errors,\n+            performanceCharts = listOf(\n+                PerformanceChartPoint(\"Lexical Search Speed\", lexicalSpeed),\n+                PerformanceChartPoint(\"Semantic Search Speed\", semanticSpeed),\n+                PerformanceChartPoint(\"Directory Watcher Latency\", watcherLatency)\n+            )\n+        )\n+        return kotlinx.serialization.json.Json.encodeToString(SessionSummary.serializer(), summary)\n     }\n }"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values).",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:44-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values)."
-                              },
-                              {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: app-desktop/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/desktop/SettingsManager.kt\n@@ -257,11 +257,20 @@ object SettingsManager {\n     fun getExcludedPaths(): List<String> {\n         val value = prefs.get(\"excluded_paths\", \"\")\n         if (value.isEmpty()) return emptyList()\n-        return value.split(\",\")\n+        return try {\n+            if (value.trim().startsWith(\"[\")) {\n+                kotlinx.serialization.json.Json.decodeFromString(value)\n+            } else {\n+                value.split(\",\")\n+            }\n+        } catch (_: Exception) {\n+            value.split(\",\")\n+        }\n     }\n \n     fun setExcludedPaths(paths: List<String>) {\n-        prefs.put(\"excluded_paths\", paths.filter { it.isNotBlank() }.joinToString(\",\"))\n+        val cleaned = paths.map { it.trim() }.filter { it.isNotBlank() }.distinct()\n+        prefs.put(\"excluded_paths\", kotlinx.serialization.json.Json.encodeToString(cleaned))\n     }\n \n     private fun putOrRemove(key: String, value: String?) {"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance).",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:44-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance)."
-                              },
-                              {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: app-desktop/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/desktop/SettingsDialog.kt\n@@ -301,12 +301,10 @@\n                                                         .clip(RoundedCornerShape(8.dp))\n                                                         .background(if (isStandardSelected) SlateSurface else Color.Transparent)\n                                                         .clickable {\n-                                                            if (isSubscribed) {\n-                                                                currentPreferredMode = ParserMode.STANDARD\n-                                                                SettingsManager.setPreferredParserMode(ParserMode.STANDARD)\n-                                                                LogParserFactory.setParserMode(ParserMode.STANDARD)\n-                                                                onSettingsChanged()\n-                                                            }\n+                                                            currentPreferredMode = ParserMode.STANDARD\n+                                                            SettingsManager.setPreferredParserMode(ParserMode.STANDARD)\n+                                                            LogParserFactory.setParserMode(ParserMode.STANDARD)\n+                                                            onSettingsChanged()\n                                                         }\n                                                         .pointerHoverIcon(PointerIcon(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)))\n                                                         .padding(horizontal = 12.dp, vertical = 8.dp),"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values).",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values)."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance).",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance)."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:46-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:46-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage."
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "`/callback` currently responds with HTTP 200 even when tokens are missing (POST path). For programmatic callers (the connect page) this makes it harder to detect failures and handle retries correctly. Return a 4xx status for missing tokens on POST.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:47-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "`/callback` currently responds with HTTP 200 even when tokens are missing (POST path). For programmatic callers (the connect page) this makes it harder to detect failures and handle retries correctly. Return a 4xx status for missing tokens on POST."
-                              },
-                              {
-                                "type": "code-block",
-                                "language": "diff",
-                                "text": "# File: core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/auth/LocalAuthServer.kt\n@@ -135,7 +135,7 @@\n \n                 val contentType = if (isPost) \"application/json\" else \"text/html\"\n                 exchange.responseHeaders.set(\"Content-Type\", \"$contentType; charset=UTF-8\")\n-                exchange.sendResponseHeaders(200, responseBody.toByteArray(Charsets.UTF_8).size.toLong())\n+                exchange.sendResponseHeaders(if (isPost && (idToken == null || refreshToken == null)) 400 else 200, responseBody.toByteArray(Charsets.UTF_8).size.toLong())\n                 exchange.responseBody.write(responseBody.toByteArray(Charsets.UTF_8))\n                 exchange.close()\n             } catch (e: Exception) {"
-                              }
-                            ]
-                          },
-                          {
-                            "type": "comment",
-                            "text": "This test exercises the real OS keyring when available. On developer machines and some CI environments, keyring access can be interactive (prompt/unlock), flaky, or leave side effects outside the repo. Consider isolating keyring integration tests behind an explicit opt-in flag and unit-test `SecureStorage` behavior by injecting/mocking the `Keyring` implementation.",
-                            "metadata": {
-                              "author": "Copilot",
-                              "timestamp": "2026-05-29T21:12:47-07:00",
-                              "isAiGenerated": true
-                            },
-                            "children": [
-                              {
-                                "type": "paragraph",
-                                "text": "This test exercises the real OS keyring when available. On developer machines and some CI environments, keyring access can be interactive (prompt/unlock), flaky, or leave side effects outside the repo. Consider isolating keyring integration tests behind an explicit opt-in flag and unit-test `SecureStorage` behavior by injecting/mocking the `Keyring` implementation."
+                                "text": "Copilot reviewed 45 out of 46 changed files in this pull request and generated 16 comments."
                               }
                             ]
                           }
@@ -360,12 +91,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:43.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "Access-Control-Allow-Origin is currently set to whatever Origin header is provided (or *). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins."
+                                    "text": "Comment on lines +24 to +28"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            //                                                                                                                                                Set                                                                                                                                                CORS                                                                                                                                                headers\n+                                                                                                                                                                                                                                                                                            val                                                                                                                                                origin                                                                                                                                                =                                                                                                                                                exchange.requestHeaders.getFirst(\"Origin\")                                                                                                                                                ?:                                                                                                                                                \"*\"\n+                                                                                                                                                                                                                                                                                            exchange.responseHeaders.set(\"Access-Control-Allow-Origin\",                                                                                                                                                origin)\n+                                                                                                                                                                                                                                                                                            exchange.responseHeaders.set(\"Access-Control-Allow-Methods\",                                                                                                                                                \"POST,                                                                                                                                                GET,                                                                                                                                                OPTIONS\")\n+                                                                                                                                                                                                                                                                                            exchange.responseHeaders.set(\"Access-Control-Allow-Headers\",                                                                                                                                                \"Content-Type,                                                                                                                                                Authorization\")"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins."
                                   },
                                   {
                                     "type": "code-block",
@@ -394,12 +135,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:43.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "The cleanup thread started in the finally block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs."
+                                    "text": "Comment on lines +150 to +156"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            //                                                                                                                                                Terminate                                                                                                                                                server                                                                                                                                                asynchronously                                                                                                                                                shortly                                                                                                                                                after\n+                                                                                                                                                                                                                                                                                            Thread                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            try                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            Thread.sleep(1000)\n+                                                                                                                                                                                                                                                                                            stop()\n+                                                                                                                                                                                                                                                                                            }                                                                                                                                                catch                                                                                                                                                (_:                                                                                                                                                Exception)                                                                                                                                                {}\n+                                                                                                                                                                                                                                                                                            }.start()"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs."
                                   },
                                   {
                                     "type": "code-block",
@@ -428,12 +179,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:44.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "LocalModelRunner.runLocalInference builds JSON via string interpolation without escaping. Since actions/errors can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using kotlinx.serialization instead so strings are correctly escaped."
+                                    "text": "Comment on lines +122 to +136"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            return                                                                                                                                                \"\"\"\n+                                                                                                                                                                                                                                                                                            {\n+                                                                                                                                                                                                                                                                                            \"keyActions\":                                                                                                                                                [\n+                                                                                                                                                                                                                                                                                            ${actions.joinToString(\",\")                                                                                                                                                {                                                                                                                                                \"\\\"$it\\\"\"                                                                                                                                                }}\n+                                                                                                                                                                                                                                                                                            ],\n+                                                                                                                                                                                                                                                                                            \"errors\":                                                                                                                                                [\n+                                                                                                                                                                                                                                                                                            ${errors.joinToString(\",\")                                                                                                                                                {                                                                                                                                                \"\\\"$it\\\"\"                                                                                                                                                }}\n+                                                                                                                                                                                                                                                                                            ],\n+                                                                                                                                                                                                                                                                                            \"performanceCharts\":                                                                                                                                                [\n+                                                                                                                                                                                                                                                                                            {\"label\":                                                                                                                                                \"Lexical                                                                                                                                                Search                                                                                                                                                Speed\",                                                                                                                                                \"value\":                                                                                                                                                $lexicalSpeed},\n+                                                                                                                                                                                                                                                                                            {\"label\":                                                                                                                                                \"Semantic                                                                                                                                                Search                                                                                                                                                Speed\",                                                                                                                                                \"value\":                                                                                                                                                $semanticSpeed},\n+                                                                                                                                                                                                                                                                                            {\"label\":                                                                                                                                                \"Directory                                                                                                                                                Watcher                                                                                                                                                Latency\",                                                                                                                                                \"value\":                                                                                                                                                $watcherLatency}\n+                                                                                                                                                                                                                                                                                            ]\n+                                                                                                                                                                                                                                                                                            }\n+                                                                                                                                                                                                                                                                                            \"\"\".trimIndent()"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped."
                                   },
                                   {
                                     "type": "code-block",
@@ -462,12 +223,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:44.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "excluded_paths is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values)."
+                                    "text": "Comment on lines +256 to +264"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            fun                                                                                                                                                getExcludedPaths():                                                                                                                                                List<String>                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            val                                                                                                                                                value                                                                                                                                                =                                                                                                                                                prefs.get(\"excluded_paths\",                                                                                                                                                \"\")\n+                                                                                                                                                                                                                                                                                            if                                                                                                                                                (value.isEmpty())                                                                                                                                                return                                                                                                                                                emptyList()\n+                                                                                                                                                                                                                                                                                            return                                                                                                                                                value.split(\",\")\n+                                                                                                                                                                                                                                                                                            }\n+\n+                                                                                                                                                                                                                                                                                            fun                                                                                                                                                setExcludedPaths(paths:                                                                                                                                                List<String>)                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            prefs.put(\"excluded_paths\",                                                                                                                                                paths.filter                                                                                                                                                {                                                                                                                                                it.isNotBlank()                                                                                                                                                }.joinToString(\",\"))\n+                                                                                                                                                                                                                                                                                            }"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values)."
                                   },
                                   {
                                     "type": "code-block",
@@ -496,12 +267,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:44.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (if (isSubscribed) { ... }). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance)."
+                                    "text": "Comment on lines +303 to +310"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            .clickable                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            if                                                                                                                                                (isSubscribed)                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            currentPreferredMode                                                                                                                                                =                                                                                                                                                ParserMode.STANDARD\n+                                                                                                                                                                                                                                                                                            SettingsManager.setPreferredParserMode(ParserMode.STANDARD)\n+                                                                                                                                                                                                                                                                                            LogParserFactory.setParserMode(ParserMode.STANDARD)\n+                                                                                                                                                                                                                                                                                            onSettingsChanged()\n+                                                                                                                                                                                                                                                                                            }\n+                                                                                                                                                                                                                                                                                            }"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance)."
                                   },
                                   {
                                     "type": "code-block",
@@ -530,12 +311,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:46.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "DeviceKeyManager stores the RSA private key unencrypted on disk under ~/.codeoba/keys on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback."
+                                    "text": "Comment on lines +14 to +21"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                            object                                                                                                                                                DeviceKeyManager                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            private                                                                                                                                                val                                                                                                                                                keysDir                                                                                                                                                =                                                                                                                                                File(System.getProperty(\"user.home\"),                                                                                                                                                \".codeoba/keys\")\n+                                                                                                                                                                                                                                                                                            private                                                                                                                                                val                                                                                                                                                privateKeyFile                                                                                                                                                =                                                                                                                                                File(keysDir,                                                                                                                                                \"device_private.der\")\n+                                                                                                                                                                                                                                                                                            private                                                                                                                                                val                                                                                                                                                publicKeyFile                                                                                                                                                =                                                                                                                                                File(keysDir,                                                                                                                                                \"device_public.der\")\n+\n+                                                                                                                                                                                                                                                                                            init                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            keysDir.mkdirs()\n+                                                                                                                                                                                                                                                                                            }"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback."
                                   }
                                 ]
                               }
@@ -559,12 +350,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:46.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "SecureStorage falls back to java.util.prefs.Preferences when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage."
+                                    "text": "Comment on lines +9 to +14"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                                                                                                                                                                            private                                                                                                                                                val                                                                                                                                                keyring:                                                                                                                                                Keyring?                                                                                                                                                =                                                                                                                                                try                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            Keyring.create()\n+                                                                                                                                                                                                                                                                                            }                                                                                                                                                catch                                                                                                                                                (e:                                                                                                                                                Throwable)                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            System.err.println(\"SecureStorage:                                                                                                                                                Native                                                                                                                                                Keyring                                                                                                                                                initialization                                                                                                                                                failed.                                                                                                                                                Falling                                                                                                                                                back                                                                                                                                                to                                                                                                                                                Java                                                                                                                                                Preferences.                                                                                                                                                Error:                                                                                                                                                ${e.message}\")\n+                                                                                                                                                                                                                                                                                            null\n+                                                                                                                                                                                                                                                                                            }"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage."
                                   }
                                 ]
                               }
@@ -588,12 +389,18 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:47.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+\n+                                                                                                                                                                                                                                                                                            val                                                                                                                                                contentType                                                                                                                                                =                                                                                                                                                if                                                                                                                                                (isPost)                                                                                                                                                \"application/json\"                                                                                                                                                else                                                                                                                                                \"text/html\"\n+                                                                                                                                                                                                                                                                                            exchange.responseHeaders.set(\"Content-Type\",                                                                                                                                                \"$contentType;                                                                                                                                                charset=UTF-8\")\n+                                                                                                                                                                                                                                                                                            exchange.sendResponseHeaders(200,                                                                                                                                                responseBody.toByteArray(Charsets.UTF_8).size.toLong())"
+                                  },
+                                  {
                                     "type": "paragraph",
-                                    "text": "/callback currently responds with HTTP 200 even when tokens are missing (POST path). For programmatic callers (the connect page) this makes it harder to detect failures and handle retries correctly. Return a 4xx status for missing tokens on POST."
+                                    "text": "`/callback` currently responds with HTTP 200 even when tokens are missing (POST path). For programmatic callers (the connect page) this makes it harder to detect failures and handle retries correctly. Return a 4xx status for missing tokens on POST."
                                   },
                                   {
                                     "type": "code-block",
@@ -622,12 +429,22 @@
                                 "metadata": {
                                   "author": "Copilot",
                                   "timestamp": "2026-05-30T04:12:47.000Z",
-                                  "isAiGenerated": true
+                                  "isAiGenerated": true,
+                                  "severity": "AI"
                                 },
                                 "children": [
                                   {
                                     "type": "paragraph",
-                                    "text": "This test exercises the real OS keyring when available. On developer machines and some CI environments, keyring access can be interactive (prompt/unlock), flaky, or leave side effects outside the repo. Consider isolating keyring integration tests behind an explicit opt-in flag and unit-test SecureStorage behavior by injecting/mocking the Keyring implementation."
+                                    "text": "Comment on lines +7 to +20"
+                                  },
+                                  {
+                                    "type": "code-block",
+                                    "language": "",
+                                    "text": "+                                                                                                                                            class                                                                                                                                                SecureStorageTest                                                                                                                                                {\n+\n+                                                                                                                                                                                                                                                                                            @Test\n+                                                                                                                                                                                                                                                                                            fun                                                                                                                                                testSecureStorageOperations()                                                                                                                                                {\n+                                                                                                                                                                                                                                                                                            val                                                                                                                                                testKey                                                                                                                                                =                                                                                                                                                \"test_key_credential_storage\"\n+                                                                                                                                                                                                                                                                                            val                                                                                                                                                testVal                                                                                                                                                =                                                                                                                                                \"superSecretTokenValue123\"\n+\n+                                                                                                                                                                                                                                                                                            //                                                                                                                                                1.                                                                                                                                                Initial                                                                                                                                                state:                                                                                                                                                should                                                                                                                                                be                                                                                                                                                null                                                                                                                                                or                                                                                                                                                whatever                                                                                                                                                was                                                                                                                                                there\n+                                                                                                                                                                                                                                                                                            SecureStorage.delete(testKey)\n+                                                                                                                                                                                                                                                                                            assertNull(SecureStorage.get(testKey))\n+\n+                                                                                                                                                                                                                                                                                            //                                                                                                                                                2.                                                                                                                                                Put                                                                                                                                                value\n+                                                                                                                                                                                                                                                                                            SecureStorage.put(testKey,                                                                                                                                                testVal)\n+                                                                                                                                                                                                                                                                                            assertEquals(testVal,                                                                                                                                                SecureStorage.get(testKey))"
+                                  },
+                                  {
+                                    "type": "paragraph",
+                                    "text": "This test exercises the real OS keyring when available. On developer machines and some CI environments, keyring access can be interactive (prompt/unlock), flaky, or leave side effects outside the repo. Consider isolating keyring integration tests behind an explicit opt-in flag and unit-test `SecureStorage` behavior by injecting/mocking the `Keyring` implementation."
                                   }
                                 ]
                               }
@@ -638,6 +455,174 @@
                     ]
                   }
                 ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/security/DeviceKeyManager.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback.",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "`DeviceKeyManager` stores the RSA private key unencrypted on disk under `~/.codeoba/keys` on all platforms. This is materially weaker than the documented intent (OS-native secure storage / non-exportable keys) and makes key theft via filesystem access much easier. Consider storing the private key in the OS credential store/keystore (or at least encrypting it with an OS-protected secret) and using the on-disk key file only as a last-resort fallback."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/util/SecureStorage.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage.",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "`SecureStorage` falls back to `java.util.prefs.Preferences` when the native keyring is unavailable, which can result in refresh tokens and other credentials being stored in plaintext in a user-accessible store. If this fallback is required, it should be explicit/opt-in or replaced with an encrypted-at-rest fallback (e.g., a file encrypted with an OS-protected secret) to avoid silently weakening credential storage."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/auth/LocalAuthServer.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins.",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "`Access-Control-Allow-Origin` is currently set to whatever `Origin` header is provided (or `*`). For the loopback OAuth callback, this allows any local web page to make cross-origin POSTs to the callback endpoint and read responses, which is unnecessarily permissive for an auth credential handoff. Restrict CORS to the expected web origins (prod + emulator) and reject POSTs from unknown origins."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "core/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/core/auth/LocalAuthServer.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs.",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "The cleanup thread started in the `finally` block is non-daemon. If the app is closed shortly after an auth callback, this thread can keep the JVM alive longer than necessary. Mark the thread as daemon (or use a scheduled executor) to avoid shutdown hangs."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "core/src/commonMain/kotlin/llc/lookatwhataicando/codeoba/core/domain/parser/LogParser.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped.",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "`LocalModelRunner.runLocalInference` builds JSON via string interpolation without escaping. Since `actions`/`errors` can contain quotes/newlines (e.g., excerpts from user messages), this can easily produce invalid JSON and force the summarizer into its error fallback. Build the JSON using `kotlinx.serialization` instead so strings are correctly escaped."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "app-desktop/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/desktop/SettingsManager.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values).",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "`excluded_paths` is stored as a comma-separated string. This breaks if a path contains a comma and also makes future extensions harder. Prefer storing a JSON array string (and keep a backwards-compatible read path for existing comma-separated values)."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "comment-thread",
+        "metadata": {
+          "isUnresolved": true,
+          "filePath": "app-desktop/src/desktopMain/kotlin/llc/lookatwhataicando/codeoba/desktop/SettingsDialog.kt"
+        },
+        "children": [
+          {
+            "type": "comment",
+            "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance).",
+            "metadata": {
+              "author": "Copilot",
+              "timestamp": "",
+              "isAiGenerated": true
+            },
+            "children": [
+              {
+                "type": "paragraph",
+                "text": "The \"Standard Parsing\" option shows a hand cursor but the click handler is a no-op when the user is not subscribed (`if (isSubscribed) { ... }`). Since Standard mode is always available, allow selecting it regardless of subscription status (this also avoids a misleading interactive affordance)."
               }
             ]
           }

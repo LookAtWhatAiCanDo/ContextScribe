@@ -100,7 +100,16 @@ function serializeInline(node: Node): string {
   const tag = el.tagName.toUpperCase();
 
   if (tag === "A") {
-    const href = el.getAttribute("href") || "";
+    let href = el.getAttribute("href") || "";
+    if (href) {
+      try {
+        if (typeof window !== "undefined" && window.location) {
+          href = new URL(href, window.location.href).href;
+        }
+      } catch (e) {
+        console.warn("[ContextScribe] Failed to resolve URL:", href, e);
+      }
+    }
     const content = Array.from(el.childNodes).map(serializeInline).join("");
     if (href) {
       return `[${content.trim()}](${href})`;
@@ -128,7 +137,14 @@ function serializeInline(node: Node): string {
   }
   if (tag === "IMG") {
     const alt = el.getAttribute("alt") || "";
-    const src = el.getAttribute("src") || "";
+    let src = el.getAttribute("src") || "";
+    if (src) {
+      try {
+        if (typeof window !== "undefined" && window.location) {
+          src = new URL(src, window.location.href).href;
+        }
+      } catch (e) {}
+    }
     return src ? `![${alt}](${src})` : "";
   }
 
