@@ -115,6 +115,9 @@ When modifying the Options or Popup pages, or the Content Script Toasts, follow 
 10. **Collapsible details block parsing and expansion**:
     - **Constraint**: Sections like "Show a summary per file" on GitHub PRs are collapsible details blocks and must be expanded to ensure DOM visibility before extraction.
     - **Rule**: `src/content/dom/githubExpander.ts` queries and expands these summary details automatically. The generic parser maps HTML `<details>` and `<summary>` tags to the custom `"details"` IR block type, which is serialized to standard GFM collapsible elements.
+11. **Clickable File URIs & Code Dedenting**:
+    - **Constraint**: Plain relative repo paths and deeply nested indentation offsets (e.g., 18 spaces) inside captured code blocks/diffs are difficult for downstream AI coding agents to immediately resolve or perform direct drop-in replacements.
+    - **Rule**: The serializer resolves relative repository paths to standard relative Markdown links (e.g., `[file.ts](./file.ts)`). In addition, standard code blocks and diff blocks are processed via a dedenting utility to strip off common leading whitespace while preserving the diff prefixes (`+`, `-`, or ` `) and metadata headers.
 
 ---
 

@@ -310,7 +310,7 @@ function extractThreadCodeContext(threadContainer: HTMLElement): IRBlock[] {
     if (diffText) {
       contextBlocks.push({
         type: "code-block",
-        language: "",
+        language: "diff",
         text: diffText
       });
     }
